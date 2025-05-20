@@ -4,12 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.example.jobdemo.entity.Business;
 import org.example.jobdemo.service.BusinessService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 @RestController
@@ -39,11 +40,30 @@ public class BusinessController {
         return ResponseEntity.ok(result);
     }
 
+//    @GetMapping("/v2/search")
+//    public ResponseEntity<Page<Business>> searchBusinessesCached(
+//            @RequestParam("keyword") String keyword,
+//            Pageable pageable) {
+//        Page<Business> result = businessService.searchBusinessesByNameCached(keyword, pageable);
+//        return ResponseEntity.ok(result);
+//    }
+
     @GetMapping("/v2/search")
     public ResponseEntity<Page<Business>> searchBusinessesCached(
             @RequestParam("keyword") String keyword,
             Pageable pageable) {
-        Page<Business> result = businessService.searchBusinessesByNameCached(keyword, pageable);
-        return ResponseEntity.ok(result);
+
+        Map<String, Object> cachedData = businessService.searchBusinessesByNameCached(keyword, pageable);
+
+        // 캐시된 데이터에서 Page<Business>로 재구성
+        @SuppressWarnings("unchecked")
+        List<Business> content = (List<Business>) cachedData.get("content");
+        long totalElements = ((Number) cachedData.get("totalElements")).longValue();
+
+        Page<Business> page = new PageImpl<>(content, pageable, totalElements);
+
+        return ResponseEntity.ok(page);
     }
+
+
 }

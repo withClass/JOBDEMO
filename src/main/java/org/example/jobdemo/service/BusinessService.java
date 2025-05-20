@@ -1,6 +1,6 @@
 package org.example.jobdemo.service;
 
-import jakarta.persistence.EntityManager;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.jobdemo.dto.OpenApiBusinessDto;
@@ -8,21 +8,18 @@ import org.example.jobdemo.entity.Business;
 import org.example.jobdemo.external.OpenApiClient;
 import org.example.jobdemo.repository.BusinessJdbcRepository;
 import org.example.jobdemo.repository.BusinessRepository;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.cache.annotation.Cacheable;
-
-import javax.sql.DataSource;
 
 @Slf4j
 @Service
@@ -62,8 +59,18 @@ public class BusinessService {
     }
 
     @Cacheable(value = "businessSearchCache", key = "#keyword + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<Business> searchBusinessesByNameCached(String keyword, Pageable pageable) {
+    public Map<String, Object> searchBusinessesByNameCached(String keyword, Pageable pageable) {
         log.info("캐시 없이 DB에서 조회 중... (keyword: {}, page: {})", keyword, pageable.getPageNumber());
-        return businessRepository.searchByBusinessName(keyword, pageable);
+
+        Page<Business> page = businessRepository.searchByBusinessName(keyword, pageable);
+
+        Map<String, Object> cachedResult = new HashMap<>();
+        cachedResult.put("content", page.getContent()); // List<Business>
+        cachedResult.put("page", page.getNumber());
+        cachedResult.put("size", page.getSize());
+        cachedResult.put("totalElements", page.getTotalElements());
+        cachedResult.put("totalPages", page.getTotalPages());
+        return cachedResult;
     }
+
 }
