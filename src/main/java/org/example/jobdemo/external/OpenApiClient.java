@@ -21,10 +21,10 @@ public class OpenApiClient {
 
     public List<OpenApiBusinessDto> fetchBusinesses() {
         String baseUrl = "https://api.odcloud.kr/api/15083277/v1/uddi:c6bf89c2-8c0b-4c8e-8698-b2cd9dc31d1f_201908061635";
-        String rawServiceKey = "goN%2FzaWnUZhYEiaWb45ux82TGW%2BbdvcdibPSmxKEHJXpFyiEaQR5Lt%2Fcsg0Q7LtqNf15gVpVtKY0rZ%2BQ8Mep8g%3D%3D";
+        String rawServiceKey = System.getenv("KEY");
 
-        int totalPages = 500;
-        int perPage = 1000;
+        int perPage = 2500;
+        int totalPages = 1; // 초기값, 첫 페이지 요청 후 결정
 
         List<OpenApiBusinessDto> allData = new ArrayList<>();
 
@@ -33,7 +33,7 @@ public class OpenApiClient {
                     .queryParam("page", page)
                     .queryParam("perPage", perPage)
                     .queryParam("serviceKey", rawServiceKey)
-                    .build(true) // true: 인코딩 방지
+                    .build(true)
                     .toUri();
 
             try {
@@ -44,16 +44,21 @@ public class OpenApiClient {
                         new ParameterizedTypeReference<>() {}
                 );
 
-                List<OpenApiBusinessDto> pageData = response.getBody().getData();
-                if (pageData != null) {
-                    allData.addAll(pageData);
-                    System.out.println("✅ Page " + page + " fetched, items: " + pageData.size());
+                OpenApiResponseWrapper body = response.getBody();
+
+                if (body != null && body.getData() != null) {
+                    if (page == 1 && body.getTotalCount() > 0) {
+                        totalPages = (int) Math.ceil((double) body.getTotalCount() / perPage);
+                        System.out.println("📊 Total count: " + body.getTotalCount() + " → Pages: " + totalPages);
+                    }
+
+                    allData.addAll(body.getData());
+                    System.out.println("✅ Page " + page + " fetched, items: " + body.getData().size());
                 } else {
-                    System.out.println("⚠️ Page " + page + " returned null data");
+                    System.out.println("⚠️ Page " + page + " returned null");
                 }
 
-                // 요청 사이에 휴식 (API Rate Limit 방지)
-                Thread.sleep(1000); // 1초 휴식
+                Thread.sleep(200); // API rate limit 대응
 
             } catch (Exception e) {
                 System.err.println("❌ Failed to fetch page " + page + ": " + e.getMessage());
@@ -63,3 +68,4 @@ public class OpenApiClient {
         return allData;
     }
 }
+

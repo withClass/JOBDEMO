@@ -26,6 +26,11 @@ public class BusinessController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/import/jdbc")
+    public void importBusinessesFromApiBatch() {
+        businessService.fetchAndSaveAllBusinessesJdbc();
+    }
+
     @GetMapping("/v1/search")
     public ResponseEntity<Page<Business>> searchBusinessesRaw(
             @RequestParam("keyword") String keyword,
