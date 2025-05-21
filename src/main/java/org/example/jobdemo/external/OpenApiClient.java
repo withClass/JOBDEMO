@@ -20,16 +20,16 @@ public class OpenApiClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public List<OpenApiBusinessDto> fetchBusinesses() {
-        String baseUrl = "https://api.odcloud.kr/api/15083277/v1/uddi:c6bf89c2-8c0b-4c8e-8698-b2cd9dc31d1f_201908061635";
+        String baseUrl = "https://api.odcloud.kr/api/15083277/v1/uddi:c70b85ac-0146-41a9-8f4a-d2acafaa3c92";
         String rawServiceKey = System.getenv("KEY");
 
-        int perPage = 2500;
+        int perPage = 3000;
         int totalPages = 1; // 초기값, 첫 페이지 요청 후 결정
 
         List<OpenApiBusinessDto> allData = new ArrayList<>();
 
         for (int page = 1; page <= totalPages; page++) {
-            URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+            URI uri = UriComponentsBuilder.fromUriString(baseUrl)
                     .queryParam("page", page)
                     .queryParam("perPage", perPage)
                     .queryParam("serviceKey", rawServiceKey)

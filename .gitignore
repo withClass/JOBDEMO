@@ -35,7 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
-
+ngrinder-controller
 .gitattributes
 application.properties
 gradle-wrapper.jar
