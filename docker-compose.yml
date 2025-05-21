@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  controller:
+    image: ngrinder/controller
+    restart: always
+    ports:
+      - "9000:80"
+    volumes:
+      - ngrinder-data:/opt/ngrinder-controller/repos
+
+  agent:
+    image: ngrinder/agent
+    restart: always
+    links:
+      - controller
+
+volumes:
+  ngrinder-data:
