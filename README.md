@@ -49,7 +49,7 @@ Postman을 통해 수동으로 응답 시간만 확인하던 기존 방식에서
 
 ### V1 – 캐시 미적용
 
-![V1 결과](https://velog.velcdn.com/images/pospara9356/post/c839b693-c057-419a-a0ed-b29cc2dd84a0/image.PNG)
+![V1 결과](https://velog.velcdn.com/images/pospara9356/post/88b5cead-9470-4ec7-a5fe-29c73e81098c/image.PNG)
 
 - **평균 TPS**: 10.9
 - **평균 응답 시간**: 3,203ms
@@ -63,8 +63,7 @@ Postman을 통해 수동으로 응답 시간만 확인하던 기존 방식에서
 
 ### V2 – 캐시 적용
 
-![V2 결과](https://velog.velcdn.com/images/pospara9356/post/88b5cead-9470-4ec7-a5fe-29c73e81098c/image.PNG)
-
+![V2 결과](https://velog.velcdn.com/images/pospara9356/post/c839b693-c057-419a-a0ed-b29cc2dd84a0/image.PNG)
 - **평균 TPS**: 69.3
 - **평균 응답 시간**: 802ms
 - **총 요청 수**: 9,347
