@@ -20,7 +20,7 @@ public class OpenApiClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public List<OpenApiBusinessDto> fetchBusinesses() {
-        String baseUrl = "https://api.odcloud.kr/api/15083277/v1/uddi:c70b85ac-0146-41a9-8f4a-d2acafaa3c92";
+        String baseUrl = "https://api.odcloud.kr/api/15083277/v1/uddi:67ccdcc5-727f-408d-802a-dce95772acb8";
         String rawServiceKey = System.getenv("KEY");
 
         int perPage = 3000;
@@ -48,7 +48,8 @@ public class OpenApiClient {
 
                 if (body != null && body.getData() != null) {
                     if (page == 1 && body.getTotalCount() > 0) {
-                        totalPages = (int) Math.ceil((double) body.getTotalCount() / perPage);
+//                        totalPages = (int) Math.ceil((double) body.getTotalCount() / perPage);
+                        totalPages = 2;
                         System.out.println("📊 Total count: " + body.getTotalCount() + " → Pages: " + totalPages);
                     }
 

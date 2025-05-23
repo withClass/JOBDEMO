@@ -32,7 +32,7 @@ public class RedisConfig {
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer))
-                .entryTtl(Duration.ofMinutes(10)); // TTL 시간설정
+                .entryTtl(Duration.ofMinutes(300)); // TTL 시간설정
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)

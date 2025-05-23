@@ -27,6 +27,9 @@ public class OpenApiBusinessDto {
     @JsonProperty("자료생성년월")
     private String reportMonth; // 예: "2023-12"
 
+    @JsonProperty("가입자수")
+    private int member;
+
     @JsonProperty("신규취득자수")
     private int newMembers;
 

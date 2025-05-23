@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 public class BusinessMonthlyDataDto {
     private Long businessId;
     private String reportMonth;
+    private int member;
     private int newMembers;
     private int resignedMembers;
     private BigDecimal billingAmount;

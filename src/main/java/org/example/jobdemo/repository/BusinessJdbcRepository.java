@@ -84,12 +84,14 @@ public class BusinessJdbcRepository {
                 if (count % batchSize == 0) {
                     pstmt.executeBatch();
                     pstmt.clearBatch();
+                    System.out.println("✅ Executed BusinessMonthlyDataDto batch of " + batchSize);
                 }
             }
 
             if (count % batchSize != 0) {
                 pstmt.executeBatch();
                 pstmt.clearBatch();
+                System.out.println("✅ Executed BusinessMonthlyDataDto final batch of " + (count % batchSize));
             }
 
         } catch (Exception e) {

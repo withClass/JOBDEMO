@@ -5,12 +5,20 @@ import lombok.*;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(
+        name = "business",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"businessName", "registrationNumber"})
+        }
+)
 public class Business {
 
     @Id
@@ -31,6 +39,10 @@ public class Business {
 
     @Column(length = 100)
     private String industryName;
+
+    @OneToMany(mappedBy = "business")
+    @BatchSize(size = 50)
+    private List<BusinessMonthlyData> monthlyDataList;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

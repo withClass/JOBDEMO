@@ -1,14 +1,18 @@
 package org.example.jobdemo.service;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.jobdemo.dto.BusinessDetailDto;
+import org.example.jobdemo.dto.BusinessDto;
 import org.example.jobdemo.dto.BusinessMonthlyDataDto;
 import org.example.jobdemo.dto.OpenApiBusinessDto;
 import org.example.jobdemo.entity.Business;
 import org.example.jobdemo.external.OpenApiClient;
 import org.example.jobdemo.repository.BusinessJdbcRepository;
 import org.example.jobdemo.repository.BusinessRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +36,7 @@ public class BusinessService {
     private final OpenApiClient openApiClient;
     private final BusinessJdbcRepository businessJdbcRepository;
 
+
     public List<Business> fetchAndSaveBusinesses() {
         List<OpenApiBusinessDto> dtoList = openApiClient.fetchBusinesses();
 
@@ -50,6 +55,7 @@ public class BusinessService {
         return businessRepository.saveAll(businesses);
     }
 
+    @CacheEvict(value = "businessSearchCache", allEntries = true)
     @Transactional
     public void fetchAndSaveAllBusinessesJdbc() {
         List<OpenApiBusinessDto> dtoList = openApiClient.fetchBusinesses();
@@ -71,9 +77,6 @@ public class BusinessService {
             String key = dto.getBusinessName() + "|" + dto.getRegistrationNumber();
             Long businessId = businessIdMap.get(key);
             if (businessId == null) continue;
-
-            // 🔥 상태 코드가 "2" → 탈퇴 → 저장 안 함
-            if ("2".equals(dto.getStatusCode())) continue;
 
             monthlyList.add(BusinessMonthlyDataDto.builder()
                     .businessId(businessId)
@@ -100,13 +103,55 @@ public class BusinessService {
 
         Page<Business> page = businessRepository.searchByBusinessName(keyword, pageable);
 
+        List<BusinessDto> dtoList = page.getContent().stream()
+                .map(b -> BusinessDto.builder()
+                        .id(b.getId())
+                        .businessName(b.getBusinessName())
+                        .registrationNumber(b.getRegistrationNumber())
+                        .postCode(b.getPostCode())
+                        .roadAddress(b.getRoadAddress())
+                        .industryName(b.getIndustryName())
+                        .createdAt(b.getCreatedAt())
+                        .updatedAt(b.getUpdatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
         Map<String, Object> cachedResult = new HashMap<>();
-        cachedResult.put("content", page.getContent()); // List<Business>
+        cachedResult.put("content", dtoList); // ✅ DTO만 저장
         cachedResult.put("page", page.getNumber());
         cachedResult.put("size", page.getSize());
         cachedResult.put("totalElements", page.getTotalElements());
         cachedResult.put("totalPages", page.getTotalPages());
+
         return cachedResult;
     }
 
+    public BusinessDetailDto findBusinessDetailById(Long businessId) {
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new EntityNotFoundException("Business not found with id: " + businessId));
+
+        List<BusinessMonthlyDataDto> monthlyDataDtos = business.getMonthlyDataList().stream()
+                .map(data -> BusinessMonthlyDataDto.builder()
+                        .businessId(business.getId())
+                        .reportMonth(data.getReportMonth())
+                        .newMembers(data.getNewMembers())
+                        .resignedMembers(data.getResignedMembers())
+                        .billingAmount(data.getBillingAmount())
+                        .statusCode(data.getStatusCode())
+                        .member(data.getMember())
+                        .build())
+                .collect(Collectors.toList());
+
+        return BusinessDetailDto.builder()
+                .id(business.getId())
+                .businessName(business.getBusinessName())
+                .registrationNumber(business.getRegistrationNumber())
+                .postCode(business.getPostCode())
+                .roadAddress(business.getRoadAddress())
+                .industryName(business.getIndustryName())
+                .createdAt(business.getCreatedAt())
+                .updatedAt(business.getUpdatedAt())
+                .monthlyDataList(monthlyDataDtos)
+                .build();
+    }
 }
